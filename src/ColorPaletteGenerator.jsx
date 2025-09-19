@@ -1174,11 +1174,11 @@ const ColorPaletteGenerator = () => {
 								type="number"
 								value={familyCount}
 								min={1}
-								max={10}
+								max={21}
 								step={1}
 								onChange={(e) => {
 									const newValue = parseInt(e.target.value) || 1;
-									const clampedValue = Math.max(1, Math.min(10, newValue));
+									const clampedValue = Math.max(1, Math.min(21, newValue));
 									setFamilyCount(clampedValue);
 								}}
 								style={{
@@ -1209,11 +1209,11 @@ const ColorPaletteGenerator = () => {
 								type="number"
 								value={variationCount}
 								min={3}
-								max={21}
+								max={42}
 								step={2}
 								onChange={(e) => {
 									const newValue = parseInt(e.target.value) || 3;
-									const clampedValue = Math.max(3, Math.min(21, newValue));
+									const clampedValue = Math.max(3, Math.min(42, newValue));
 									setVariationCount(clampedValue);
 								}}
 								style={{
