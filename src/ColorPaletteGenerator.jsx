@@ -538,7 +538,7 @@ const TransformSlider = ({ label, value, min, max, step, onChange, channel, curr
 								: Math.round(value)
 							: value
 					}
-					onFocus={() => {
+					onFocus={(e) => {
 						setIsEditing(true);
 						setInputValue(
 							channel === 'lightness' || channel === 'chroma'
@@ -551,9 +551,16 @@ const TransformSlider = ({ label, value, min, max, step, onChange, channel, curr
 									: Math.round(value).toString()
 								: value.toString()
 						);
+						// Select all text after setting the value
+						setTimeout(() => e.target.select(), 0);
 					}}
 					onBlur={() => {
 						setIsEditing(false);
+						// Handle empty input
+						if (inputValue === '' || inputValue === '-') {
+							return;
+						}
+
 						const newValue = parseFloat(inputValue);
 						if (!isNaN(newValue)) {
 							const clampedValue = Math.max(min, Math.min(max, newValue));
@@ -636,6 +643,8 @@ const TransformSlider = ({ label, value, min, max, step, onChange, channel, curr
 
 // Global Control Slider Component (for families and variations)
 const GlobalControlSlider = ({ label, value, min, max, step, onChange }) => {
+	const [inputValue, setInputValue] = useState('');
+	const [isEditing, setIsEditing] = useState(false);
 	const percentage = ((value - min) / (max - min)) * 100;
 
 	return (
@@ -654,11 +663,34 @@ const GlobalControlSlider = ({ label, value, min, max, step, onChange }) => {
 				</span>
 				<input
 					type="number"
-					value={value}
-					onChange={(e) => {
-						const newValue = parseInt(e.target.value) || min;
+					value={isEditing ? inputValue : value}
+					onFocus={(e) => {
+						setIsEditing(true);
+						setInputValue(value.toString());
+						e.target.select();
+					}}
+					onBlur={() => {
+						setIsEditing(false);
+						// Handle empty input
+						if (inputValue === '' || inputValue === '-') {
+							return;
+						}
+
+						const newValue = parseInt(inputValue);
+						if (isNaN(newValue)) {
+							return;
+						}
+
 						const clampedValue = Math.max(min, Math.min(max, newValue));
 						onChange({ target: { value: clampedValue } });
+					}}
+					onChange={(e) => {
+						setInputValue(e.target.value);
+					}}
+					onKeyDown={(e) => {
+						if (e.key === 'Enter') {
+							e.target.blur(); // This will trigger onBlur
+						}
 					}}
 					style={{
 						width: '60px',
@@ -726,6 +758,9 @@ const GlobalControlSlider = ({ label, value, min, max, step, onChange }) => {
 	);
 };
 const ColorSlider = ({ label, value, min, max, step, onChange, channel, currentColor }) => {
+	const [inputValue, setInputValue] = useState('');
+	const [isEditing, setIsEditing] = useState(false);
+
 	const getSliderBackground = () => {
 		if (channel === 'hue') {
 			return 'linear-gradient(to right, #ff0000, #ff8000, #ffff00, #80ff00, #00ff00, #00ff80, #00ffff, #0080ff, #0000ff, #8000ff, #ff00ff, #ff0080, #ff0000)';
@@ -773,7 +808,9 @@ const ColorSlider = ({ label, value, min, max, step, onChange, channel, currentC
 				<input
 					type="number"
 					value={
-						channel === 'lightness' || channel === 'chroma'
+						isEditing
+							? inputValue
+							: channel === 'lightness' || channel === 'chroma'
 							? (value * 100).toFixed(2)
 							: channel === 'hue'
 							? value.toFixed(2)
@@ -783,8 +820,33 @@ const ColorSlider = ({ label, value, min, max, step, onChange, channel, currentC
 								: Math.round(value)
 							: value
 					}
-					onChange={(e) => {
-						const newValue = parseFloat(e.target.value) || 0;
+					onFocus={(e) => {
+						setIsEditing(true);
+						setInputValue(
+							channel === 'lightness' || channel === 'chroma'
+								? (value * 100).toFixed(2)
+								: channel === 'hue'
+								? value.toFixed(2)
+								: typeof value === 'number'
+								? value < 1
+									? value.toFixed(3)
+									: Math.round(value).toString()
+								: value.toString()
+						);
+						e.target.select();
+					}}
+					onBlur={() => {
+						setIsEditing(false);
+						// Handle empty input
+						if (inputValue === '' || inputValue === '-') {
+							return;
+						}
+
+						const newValue = parseFloat(inputValue);
+						if (isNaN(newValue)) {
+							return;
+						}
+
 						let clampedValue;
 						if (channel === 'lightness' || channel === 'chroma') {
 							// Convert percentage back to 0-1 range
@@ -793,6 +855,14 @@ const ColorSlider = ({ label, value, min, max, step, onChange, channel, currentC
 							clampedValue = Math.max(min, Math.min(max, newValue));
 						}
 						onChange({ target: { value: clampedValue } });
+					}}
+					onChange={(e) => {
+						setInputValue(e.target.value);
+					}}
+					onKeyDown={(e) => {
+						if (e.key === 'Enter') {
+							e.target.blur(); // This will trigger onBlur
+						}
 					}}
 					style={{
 						width: '80px',
@@ -876,6 +946,14 @@ const ColorPaletteGenerator = () => {
 	const [showSwatches, setShowSwatches] = useState(true);
 	const familiesInitialized = useRef(false);
 	const cssTextareaRef = useRef(null);
+
+	// Local state for family count input
+	const [familyCountInput, setFamilyCountInput] = useState('');
+	const [familyCountEditing, setFamilyCountEditing] = useState(false);
+
+	// Local state for variation count input
+	const [variationCountInput, setVariationCountInput] = useState('');
+	const [variationCountEditing, setVariationCountEditing] = useState(false);
 
 	// Generate random base color
 	const generateRandomColor = () => {
@@ -1201,14 +1279,37 @@ const ColorPaletteGenerator = () => {
 							</span>
 							<input
 								type="number"
-								value={familyCount}
+								value={familyCountEditing ? familyCountInput : familyCount}
 								min={1}
 								max={21}
 								step={1}
-								onChange={(e) => {
-									const newValue = parseInt(e.target.value) || 1;
+								onFocus={(e) => {
+									setFamilyCountEditing(true);
+									setFamilyCountInput(familyCount.toString());
+									e.target.select();
+								}}
+								onBlur={() => {
+									setFamilyCountEditing(false);
+									// Handle empty input
+									if (familyCountInput === '' || familyCountInput === '-') {
+										return;
+									}
+
+									const newValue = parseInt(familyCountInput);
+									if (isNaN(newValue)) {
+										return;
+									}
+
 									const clampedValue = Math.max(1, Math.min(21, newValue));
 									setFamilyCount(clampedValue);
+								}}
+								onChange={(e) => {
+									setFamilyCountInput(e.target.value);
+								}}
+								onKeyDown={(e) => {
+									if (e.key === 'Enter') {
+										e.target.blur(); // This will trigger onBlur
+									}
 								}}
 								style={{
 									width: '60px',
@@ -1236,14 +1337,37 @@ const ColorPaletteGenerator = () => {
 							</span>
 							<input
 								type="number"
-								value={variationCount}
+								value={variationCountEditing ? variationCountInput : variationCount}
 								min={3}
 								max={42}
 								step={2}
-								onChange={(e) => {
-									const newValue = parseInt(e.target.value) || 3;
+								onFocus={(e) => {
+									setVariationCountEditing(true);
+									setVariationCountInput(variationCount.toString());
+									e.target.select();
+								}}
+								onBlur={() => {
+									setVariationCountEditing(false);
+									// Handle empty input
+									if (variationCountInput === '' || variationCountInput === '-') {
+										return;
+									}
+
+									const newValue = parseInt(variationCountInput);
+									if (isNaN(newValue)) {
+										return;
+									}
+
 									const clampedValue = Math.max(3, Math.min(42, newValue));
 									setVariationCount(clampedValue);
+								}}
+								onChange={(e) => {
+									setVariationCountInput(e.target.value);
+								}}
+								onKeyDown={(e) => {
+									if (e.key === 'Enter') {
+										e.target.blur(); // This will trigger onBlur
+									}
 								}}
 								style={{
 									width: '60px',
@@ -1435,9 +1559,13 @@ const ColorPaletteGenerator = () => {
 										min={-100}
 										max={100}
 										step={1}
-										onChange={(e) =>
-											setTransformMin([parseInt(e.target.value), transformMin[1], transformMin[2], transformMin[3]])
-										}
+										onChange={(e) => {
+											const inputValue = e.target.value;
+											if (inputValue === '' || inputValue === '-') return;
+											const newValue = parseInt(inputValue);
+											if (isNaN(newValue)) return;
+											setTransformMin([newValue, transformMin[1], transformMin[2], transformMin[3]]);
+										}}
 										channel="lightness"
 										currentColor={[0.5, 0.1, 200]}
 									/>
@@ -1447,9 +1575,13 @@ const ColorPaletteGenerator = () => {
 										min={-50}
 										max={50}
 										step={1}
-										onChange={(e) =>
-											setTransformMin([transformMin[0], parseInt(e.target.value), transformMin[2], transformMin[3]])
-										}
+										onChange={(e) => {
+											const inputValue = e.target.value;
+											if (inputValue === '' || inputValue === '-') return;
+											const newValue = parseInt(inputValue);
+											if (isNaN(newValue)) return;
+											setTransformMin([transformMin[0], newValue, transformMin[2], transformMin[3]]);
+										}}
 										channel="chroma"
 										currentColor={[0.5, 0.1, 200]}
 									/>
@@ -1459,9 +1591,13 @@ const ColorPaletteGenerator = () => {
 										min={-180}
 										max={180}
 										step={1}
-										onChange={(e) =>
-											setTransformMin([transformMin[0], transformMin[1], parseInt(e.target.value), transformMin[3]])
-										}
+										onChange={(e) => {
+											const inputValue = e.target.value;
+											if (inputValue === '' || inputValue === '-') return;
+											const newValue = parseInt(inputValue);
+											if (isNaN(newValue)) return;
+											setTransformMin([transformMin[0], transformMin[1], newValue, transformMin[3]]);
+										}}
 										channel="hue"
 										currentColor={[0.5, 0.1, 200]}
 									/>
@@ -1510,9 +1646,13 @@ const ColorPaletteGenerator = () => {
 										min={-100}
 										max={100}
 										step={1}
-										onChange={(e) =>
-											setTransformMax([parseInt(e.target.value), transformMax[1], transformMax[2], transformMax[3]])
-										}
+										onChange={(e) => {
+											const inputValue = e.target.value;
+											if (inputValue === '' || inputValue === '-') return;
+											const newValue = parseInt(inputValue);
+											if (isNaN(newValue)) return;
+											setTransformMax([newValue, transformMax[1], transformMax[2], transformMax[3]]);
+										}}
 										channel="lightness"
 										currentColor={[0.5, 0.1, 200]}
 									/>
@@ -1522,9 +1662,13 @@ const ColorPaletteGenerator = () => {
 										min={-50}
 										max={50}
 										step={1}
-										onChange={(e) =>
-											setTransformMax([transformMax[0], parseInt(e.target.value), transformMax[2], transformMax[3]])
-										}
+										onChange={(e) => {
+											const inputValue = e.target.value;
+											if (inputValue === '' || inputValue === '-') return;
+											const newValue = parseInt(inputValue);
+											if (isNaN(newValue)) return;
+											setTransformMax([transformMax[0], newValue, transformMax[2], transformMax[3]]);
+										}}
 										channel="chroma"
 										currentColor={[0.5, 0.1, 200]}
 									/>
@@ -1534,9 +1678,13 @@ const ColorPaletteGenerator = () => {
 										min={-180}
 										max={180}
 										step={1}
-										onChange={(e) =>
-											setTransformMax([transformMax[0], transformMax[1], parseInt(e.target.value), transformMax[3]])
-										}
+										onChange={(e) => {
+											const inputValue = e.target.value;
+											if (inputValue === '' || inputValue === '-') return;
+											const newValue = parseInt(inputValue);
+											if (isNaN(newValue)) return;
+											setTransformMax([transformMax[0], transformMax[1], newValue, transformMax[3]]);
+										}}
 										channel="hue"
 										currentColor={[0.5, 0.1, 200]}
 									/>
