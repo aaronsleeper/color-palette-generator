@@ -477,6 +477,9 @@ const EasingDropdown = ({ value, onChange, options, customCurve, onCustomCurveCh
 
 // Custom Color Slider Component for Transform Controls
 const TransformSlider = ({ label, value, min, max, step, onChange, channel, currentColor }) => {
+	const [inputValue, setInputValue] = useState('');
+	const [isEditing, setIsEditing] = useState(false);
+
 	const getSliderBackground = () => {
 		if (channel === 'hue') {
 			return 'linear-gradient(to right, #ff0000, #ff8000, #ffff00, #80ff00, #00ff00, #00ff80, #00ffff, #0080ff, #0000ff, #8000ff, #ff00ff, #ff0080, #ff0000)';
@@ -506,25 +509,26 @@ const TransformSlider = ({ label, value, min, max, step, onChange, channel, curr
 	};
 
 	return (
-		<div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-			{/* Left side: Input */}
-			<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', minWidth: '60px' }}>
-				<div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '4px' }}>
-					<span
-						style={{
-							fontSize: '13px',
-							fontWeight: '500',
-							color: '#9ca3af',
-							letterSpacing: '0.5px',
-						}}
-					>
-						{getShortLabel()}
-					</span>
-				</div>
+		<div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+			{/* Left side: Label and Input */}
+			<div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: '80px' }}>
+				<span
+					style={{
+						fontSize: '13px',
+						fontWeight: '500',
+						color: '#9ca3af',
+						letterSpacing: '0.5px',
+						minWidth: '12px',
+					}}
+				>
+					{getShortLabel()}
+				</span>
 				<input
 					type="number"
 					value={
-						channel === 'lightness' || channel === 'chroma'
+						isEditing
+							? inputValue
+							: channel === 'lightness' || channel === 'chroma'
 							? value.toFixed(2)
 							: channel === 'hue'
 							? value.toFixed(2)
@@ -534,10 +538,35 @@ const TransformSlider = ({ label, value, min, max, step, onChange, channel, curr
 								: Math.round(value)
 							: value
 					}
+					onFocus={() => {
+						setIsEditing(true);
+						setInputValue(
+							channel === 'lightness' || channel === 'chroma'
+								? value.toFixed(2)
+								: channel === 'hue'
+								? value.toFixed(2)
+								: typeof value === 'number'
+								? value < 1
+									? value.toFixed(3)
+									: Math.round(value).toString()
+								: value.toString()
+						);
+					}}
+					onBlur={() => {
+						setIsEditing(false);
+						const newValue = parseFloat(inputValue);
+						if (!isNaN(newValue)) {
+							const clampedValue = Math.max(min, Math.min(max, newValue));
+							onChange({ target: { value: clampedValue } });
+						}
+					}}
 					onChange={(e) => {
-						const newValue = parseFloat(e.target.value) || 0;
-						const clampedValue = Math.max(min, Math.min(max, newValue));
-						onChange({ target: { value: clampedValue } });
+						setInputValue(e.target.value);
+					}}
+					onKeyDown={(e) => {
+						if (e.key === 'Enter') {
+							e.target.blur(); // This will trigger onBlur
+						}
 					}}
 					style={{
 						width: '56px',
