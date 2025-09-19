@@ -529,12 +529,12 @@ const TransformSlider = ({ label, value, min, max, step, onChange, channel, curr
 						isEditing
 							? inputValue
 							: channel === 'lightness' || channel === 'chroma'
-							? value.toFixed(2)
+							? value.toFixed(6)
 							: channel === 'hue'
-							? value.toFixed(2)
+							? value.toFixed(6)
 							: typeof value === 'number'
 							? value < 1
-								? value.toFixed(3)
+								? value.toFixed(6)
 								: Math.round(value)
 							: value
 					}
@@ -542,12 +542,12 @@ const TransformSlider = ({ label, value, min, max, step, onChange, channel, curr
 						setIsEditing(true);
 						setInputValue(
 							channel === 'lightness' || channel === 'chroma'
-								? value.toFixed(2)
+								? value.toFixed(6)
 								: channel === 'hue'
-								? value.toFixed(2)
+								? value.toFixed(6)
 								: typeof value === 'number'
 								? value < 1
-									? value.toFixed(3)
+									? value.toFixed(6)
 									: Math.round(value).toString()
 								: value.toString()
 						);
@@ -564,7 +564,10 @@ const TransformSlider = ({ label, value, min, max, step, onChange, channel, curr
 						const newValue = parseFloat(inputValue);
 						if (!isNaN(newValue)) {
 							const clampedValue = Math.max(min, Math.min(max, newValue));
-							onChange({ target: { value: clampedValue } });
+							// Only update if the value actually changed
+							if (clampedValue !== value) {
+								onChange({ target: { value: clampedValue } });
+							}
 						}
 					}}
 					onChange={(e) => {
@@ -682,7 +685,10 @@ const GlobalControlSlider = ({ label, value, min, max, step, onChange }) => {
 						}
 
 						const clampedValue = Math.max(min, Math.min(max, newValue));
-						onChange({ target: { value: clampedValue } });
+						// Only update if the value actually changed
+						if (clampedValue !== value) {
+							onChange({ target: { value: clampedValue } });
+						}
 					}}
 					onChange={(e) => {
 						setInputValue(e.target.value);
@@ -779,8 +785,6 @@ const ColorSlider = ({ label, value, min, max, step, onChange, channel, currentC
 		return `oklch(${l} ${c} ${h})`;
 	};
 
-	const percentage = ((value - min) / (max - min)) * 100;
-
 	return (
 		<div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
 			{/* Left side: Label and Input */}
@@ -811,12 +815,12 @@ const ColorSlider = ({ label, value, min, max, step, onChange, channel, currentC
 						isEditing
 							? inputValue
 							: channel === 'lightness' || channel === 'chroma'
-							? (value * 100).toFixed(2)
+							? (value * 100).toFixed(6)
 							: channel === 'hue'
-							? value.toFixed(2)
+							? value.toFixed(6)
 							: typeof value === 'number'
 							? value < 1
-								? value.toFixed(3)
+								? value.toFixed(6)
 								: Math.round(value)
 							: value
 					}
@@ -824,12 +828,12 @@ const ColorSlider = ({ label, value, min, max, step, onChange, channel, currentC
 						setIsEditing(true);
 						setInputValue(
 							channel === 'lightness' || channel === 'chroma'
-								? (value * 100).toFixed(2)
+								? (value * 100).toFixed(6)
 								: channel === 'hue'
-								? value.toFixed(2)
+								? value.toFixed(6)
 								: typeof value === 'number'
 								? value < 1
-									? value.toFixed(3)
+									? value.toFixed(6)
 									: Math.round(value).toString()
 								: value.toString()
 						);
@@ -854,7 +858,10 @@ const ColorSlider = ({ label, value, min, max, step, onChange, channel, currentC
 						} else {
 							clampedValue = Math.max(min, Math.min(max, newValue));
 						}
-						onChange({ target: { value: clampedValue } });
+						// Only update if the value actually changed
+						if (clampedValue !== value) {
+							onChange({ target: { value: clampedValue } });
+						}
 					}}
 					onChange={(e) => {
 						setInputValue(e.target.value);
@@ -880,7 +887,7 @@ const ColorSlider = ({ label, value, min, max, step, onChange, channel, currentC
 			</div>
 
 			{/* Right side: Slider */}
-			<div style={{ position: 'relative', height: '32px', display: 'flex', alignItems: 'center', flex: 1 }}>
+			<div style={{ height: '32px', display: 'flex', alignItems: 'center', flex: 1 }}>
 				<input
 					type="range"
 					min={min}
@@ -900,34 +907,6 @@ const ColorSlider = ({ label, value, min, max, step, onChange, channel, currentC
 						position: 'relative',
 					}}
 				/>
-				<div
-					style={{
-						position: 'absolute',
-						left: `calc(${percentage}% - 12px)`,
-						top: '50%',
-						transform: 'translateY(-50%)',
-						width: '24px',
-						height: '24px',
-						borderRadius: '50%',
-						backgroundColor: 'white',
-						border: '2px solid #e5e7eb',
-						boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
-						display: 'flex',
-						alignItems: 'center',
-						justifyContent: 'center',
-						pointerEvents: 'none',
-					}}
-				>
-					<div
-						style={{
-							width: '12px',
-							height: '12px',
-							borderRadius: '50%',
-							backgroundColor: getHandleColor(),
-							border: '1px solid rgba(0, 0, 0, 0.1)',
-						}}
-					/>
-				</div>
 			</div>
 		</div>
 	);
@@ -1305,6 +1284,12 @@ const ColorPaletteGenerator = () => {
 								}}
 								onChange={(e) => {
 									setFamilyCountInput(e.target.value);
+									// Also update the actual count immediately for arrow buttons
+									const newValue = parseInt(e.target.value);
+									if (!isNaN(newValue)) {
+										const clampedValue = Math.max(1, Math.min(21, newValue));
+										setFamilyCount(clampedValue);
+									}
 								}}
 								onKeyDown={(e) => {
 									if (e.key === 'Enter') {
@@ -1340,7 +1325,7 @@ const ColorPaletteGenerator = () => {
 								value={variationCountEditing ? variationCountInput : variationCount}
 								min={3}
 								max={42}
-								step={2}
+								step={1}
 								onFocus={(e) => {
 									setVariationCountEditing(true);
 									setVariationCountInput(variationCount.toString());
@@ -1363,6 +1348,12 @@ const ColorPaletteGenerator = () => {
 								}}
 								onChange={(e) => {
 									setVariationCountInput(e.target.value);
+									// Also update the actual count immediately for arrow buttons
+									const newValue = parseInt(e.target.value);
+									if (!isNaN(newValue)) {
+										const clampedValue = Math.max(3, Math.min(42, newValue));
+										setVariationCount(clampedValue);
+									}
 								}}
 								onKeyDown={(e) => {
 									if (e.key === 'Enter') {
