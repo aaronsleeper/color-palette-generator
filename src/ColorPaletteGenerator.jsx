@@ -1024,11 +1024,18 @@ const ColorPaletteGenerator = () => {
 				progress = easingFunctions[easingType] ? easingFunctions[easingType](progress) : progress;
 			}
 
-			// Apply transform to each channel
+			// Calculate target colors for min/max transforms
+			const targetColor = [
+				Math.max(0, Math.min(1, baseColor[0] + transform[0] / 100)),
+				Math.max(0, Math.min(0.37, baseColor[1] + transform[1] / 100)),
+				(baseColor[2] + transform[2] + 360) % 360,
+			];
+
+			// Interpolate between base color and target color
 			const newColor = [
-				Math.max(0, Math.min(1, baseColor[0] + (transform[0] / 100) * progress)),
-				Math.max(0, Math.min(0.37, baseColor[1] + (transform[1] / 100) * progress)),
-				(baseColor[2] + transform[2] * progress + 360) % 360,
+				baseColor[0] + (targetColor[0] - baseColor[0]) * progress,
+				baseColor[1] + (targetColor[1] - baseColor[1]) * progress,
+				baseColor[2] + (targetColor[2] - baseColor[2]) * progress,
 			];
 
 			variations.push(newColor);
