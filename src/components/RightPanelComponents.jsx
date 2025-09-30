@@ -29,14 +29,14 @@ export const ChannelControl = ({ channel, value, onChange, error }) => {
 	const max = channel === 'h' ? 360 : 100;
 	const unit = channel === 'h' ? '°' : '%';
 	const fieldId = `base-${channel}`;
-	const [inputValue, setInputValue] = React.useState(value.toFixed(channel === 'h' ? 0 : 1));
+	const [inputValue, setInputValue] = React.useState(value.toString());
 	const [isUserTyping, setIsUserTyping] = React.useState(false);
 
 	// Update input value when the actual value changes (e.g., from slider)
 	// But only if the user is not currently typing
 	React.useEffect(() => {
 		if (!isUserTyping) {
-			setInputValue(value.toFixed(channel === 'h' ? 0 : 1));
+			setInputValue(value.toString());
 		}
 	}, [value, channel, isUserTyping]);
 
@@ -57,7 +57,7 @@ export const ChannelControl = ({ channel, value, onChange, error }) => {
 		// Only reset to current value if the input is invalid on blur
 		const numValue = parseFloat(inputValue);
 		if (isNaN(numValue)) {
-			setInputValue(value.toFixed(channel === 'h' ? 0 : 1));
+			setInputValue(value.toString());
 		}
 	};
 
