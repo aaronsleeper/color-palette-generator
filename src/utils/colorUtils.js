@@ -1,6 +1,6 @@
 // Color utility functions
 import colorName from 'color-name';
-import { formatRgb, oklch } from 'culori';
+import { formatRgb, oklch, clampChroma } from 'culori';
 
 // Curve functions for color interpolation
 export const curves = {
@@ -134,9 +134,10 @@ export const generateSwatches = (family, stepsMin, stepsMax, transformMin, trans
 // Convert OKLCH to CSS
 export const colorToCSS = (color, format = 'oklch') => {
 	if (format === 'oklch') {
-		return `oklch(${color.l}% ${(color.c / 150) * 100}% ${color.h})`;
+		// L is 0-100%, C is 0-0.4 (absolute, not percentage), H is 0-360 degrees
+		return `oklch(${color.l}% ${color.c / 150} ${color.h})`;
 	}
-	return `oklch(${color.l}% ${(color.c / 150) * 100}% ${color.h})`;
+	return `oklch(${color.l}% ${color.c / 150} ${color.h})`;
 };
 
 // Generate CSS export
@@ -211,11 +212,15 @@ export const validateInput = (value, min, max, fieldId, inputErrors, setInputErr
 
 // Convert OKLCH to RGB for SVG (better compatibility)
 const colorToRGB = (color) => {
-	const oklchColor = oklch({
+	let oklchColor = oklch({
+		mode: 'oklch',
 		l: color.l / 100,
 		c: color.c / 150,
 		h: color.h,
 	});
+
+	// Use chroma clamping to reduce color shifts when converting out-of-gamut colors
+	oklchColor = clampChroma(oklchColor, 'rgb');
 
 	const rgbColor = formatRgb(oklchColor);
 	return rgbColor;
@@ -248,7 +253,11 @@ export const generateSVG = (families, stepsMin, stepsMax, transformMin, transfor
 		swatches.forEach((swatch, si) => {
 			const xOffset = padding + si * swatchWidth;
 			const color = colorToRGB(swatch);
-			svg += `<rect x="${xOffset}" y="${yOffset + labelHeight}" width="${swatchWidth}" height="${swatchHeight}" fill="${color}"/>`;
+			const oklchValue = `oklch(${swatch.l}% ${swatch.c / 150} ${swatch.h})`;
+			const swatchName = `${family.name}-${String(si + 1).padStart(2, '0')}`;
+
+			// Include OKLCH values as data attributes for reference
+			svg += `<rect x="${xOffset}" y="${yOffset + labelHeight}" width="${swatchWidth}" height="${swatchHeight}" fill="${color}" data-oklch="${oklchValue}" data-name="${swatchName}"><title>${swatchName}: ${oklchValue}</title></rect>`;
 		});
 	});
 
