@@ -209,6 +209,18 @@ export const validateInput = (value, min, max, fieldId, inputErrors, setInputErr
 	return numValue;
 };
 
+// Convert OKLCH to RGB for SVG (better compatibility)
+const colorToRGB = (color) => {
+	const oklchColor = oklch({
+		l: color.l / 100,
+		c: color.c / 150,
+		h: color.h,
+	});
+
+	const rgbColor = formatRgb(oklchColor);
+	return rgbColor;
+};
+
 // Generate SVG export
 export const generateSVG = (families, stepsMin, stepsMax, transformMin, transformMax, curveType) => {
 	const swatchWidth = 40;
@@ -235,7 +247,7 @@ export const generateSVG = (families, stepsMin, stepsMax, transformMin, transfor
 		// Add swatches
 		swatches.forEach((swatch, si) => {
 			const xOffset = padding + si * swatchWidth;
-			const color = colorToCSS(swatch);
+			const color = colorToRGB(swatch);
 			svg += `<rect x="${xOffset}" y="${yOffset + labelHeight}" width="${swatchWidth}" height="${swatchHeight}" fill="${color}"/>`;
 		});
 	});
