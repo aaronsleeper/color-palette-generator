@@ -29,6 +29,41 @@ export const ChannelControl = ({ channel, value, onChange, error }) => {
 	const max = channel === 'h' ? 360 : 100;
 	const unit = channel === 'h' ? '°' : '%';
 	const fieldId = `base-${channel}`;
+	const [inputValue, setInputValue] = React.useState(value.toFixed(channel === 'h' ? 0 : 1));
+	const [isUserTyping, setIsUserTyping] = React.useState(false);
+
+	// Update input value when the actual value changes (e.g., from slider)
+	// But only if the user is not currently typing
+	React.useEffect(() => {
+		if (!isUserTyping) {
+			setInputValue(value.toFixed(channel === 'h' ? 0 : 1));
+		}
+	}, [value, channel, isUserTyping]);
+
+	const handleInputChange = (e) => {
+		const newValue = e.target.value;
+		setInputValue(newValue);
+		setIsUserTyping(true);
+
+		// Immediately update the value if it's valid
+		const numValue = parseFloat(newValue);
+		if (!isNaN(numValue)) {
+			onChange(channel, numValue);
+		}
+	};
+
+	const handleInputBlur = () => {
+		setIsUserTyping(false);
+		// Only reset to current value if the input is invalid on blur
+		const numValue = parseFloat(inputValue);
+		if (isNaN(numValue)) {
+			setInputValue(value.toFixed(channel === 'h' ? 0 : 1));
+		}
+	};
+
+	const handleInputFocus = (e) => {
+		e.target.select();
+	};
 
 	return (
 		<div className="channel-control">
@@ -48,9 +83,10 @@ export const ChannelControl = ({ channel, value, onChange, error }) => {
 					min={min}
 					max={max}
 					step={channel === 'h' ? 1 : 0.1}
-					value={value.toFixed(channel === 'h' ? 0 : 1)}
+					value={inputValue}
 					onFocus={handleInputFocus}
-					onChange={(e) => onChange(channel, parseFloat(e.target.value))}
+					onChange={handleInputChange}
+					onBlur={handleInputBlur}
 					className={`form-input ${error ? 'error' : ''}`}
 				/>
 				<span className="form-input-unit">{unit}</span>

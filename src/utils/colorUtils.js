@@ -134,9 +134,9 @@ export const generateSwatches = (family, stepsMin, stepsMax, transformMin, trans
 // Convert OKLCH to CSS
 export const colorToCSS = (color, format = 'oklch') => {
 	if (format === 'oklch') {
-		return `oklch(${color.l.toFixed(1)}% ${((color.c / 150) * 100).toFixed(1)}% ${color.h.toFixed(1)})`;
+		return `oklch(${color.l}% ${(color.c / 150) * 100}% ${color.h})`;
 	}
-	return `oklch(${color.l.toFixed(1)}% ${((color.c / 150) * 100).toFixed(1)}% ${color.h.toFixed(1)})`;
+	return `oklch(${color.l}% ${(color.c / 150) * 100}% ${color.h})`;
 };
 
 // Generate CSS export
@@ -154,27 +154,29 @@ export const generateCSS = (families, stepsMin, stepsMax, transformMin, transfor
 };
 
 // Align channels across families
-export const alignChannel = (families, channel) => {
+export const alignChannel = (families, channel, selectedFamilyIndex = 0) => {
 	if (families.length === 0) return families;
 
 	const newFamilies = [...families];
+	const selectedFamily = newFamilies[selectedFamilyIndex];
 
 	if (channel === 'h') {
-		// Distribute hues evenly
+		// Use selected family's hue as starting point and increment from there
 		const step = 360 / families.length;
+		const startHue = selectedFamily.base.h;
 		newFamilies.forEach((family, i) => {
-			family.base.h = (i * step) % 360;
+			// Calculate offset from selected family
+			const offset = i - selectedFamilyIndex;
+			family.base.h = (startHue + offset * step + 360) % 360;
 			if (!family.customName) {
 				family.name = getColorName(family.base.h, family.base.l, family.base.c);
 			}
 		});
 	} else {
-		// Align to first family's value
-		const targetValue = newFamilies[0].base[channel];
-		newFamilies.forEach((family, i) => {
-			if (i > 0) {
-				family.base[channel] = targetValue;
-			}
+		// Copy selected family's value to all other families
+		const targetValue = selectedFamily.base[channel];
+		newFamilies.forEach((family) => {
+			family.base[channel] = targetValue;
 		});
 	}
 
@@ -205,6 +207,54 @@ export const validateInput = (value, min, max, fieldId, inputErrors, setInputErr
 	setInputErrors(newErrors);
 
 	return numValue;
+};
+
+// Generate SVG export
+export const generateSVG = (families, stepsMin, stepsMax, transformMin, transformMax, curveType) => {
+	const swatchWidth = 40;
+	const swatchHeight = 60;
+	const labelHeight = 24;
+	const familyGap = 8;
+	const padding = 16;
+
+	const totalSwatches = stepsMin + 1 + stepsMax;
+	const totalWidth = totalSwatches * swatchWidth + padding * 2;
+	const familyHeight = labelHeight + swatchHeight;
+	const totalHeight = families.length * (familyHeight + familyGap) - familyGap + padding * 2;
+
+	let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${totalWidth}" height="${totalHeight}" viewBox="0 0 ${totalWidth} ${totalHeight}">`;
+	svg += `<rect width="${totalWidth}" height="${totalHeight}" fill="white"/>`;
+
+	families.forEach((family, fi) => {
+		const swatches = generateSwatches(family, stepsMin, stepsMax, transformMin, transformMax, curveType);
+		const yOffset = padding + fi * (familyHeight + familyGap);
+
+		// Add family label
+		svg += `<text x="${padding}" y="${yOffset + 16}" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#333">${family.name}</text>`;
+
+		// Add swatches
+		swatches.forEach((swatch, si) => {
+			const xOffset = padding + si * swatchWidth;
+			const color = colorToCSS(swatch);
+			svg += `<rect x="${xOffset}" y="${yOffset + labelHeight}" width="${swatchWidth}" height="${swatchHeight}" fill="${color}"/>`;
+		});
+	});
+
+	svg += '</svg>';
+	return svg;
+};
+
+// Download SVG file
+export const downloadSVG = (svgContent, filename = 'color-palette.svg') => {
+	const blob = new Blob([svgContent], { type: 'image/svg+xml' });
+	const url = URL.createObjectURL(blob);
+	const link = document.createElement('a');
+	link.href = url;
+	link.download = filename;
+	document.body.appendChild(link);
+	link.click();
+	document.body.removeChild(link);
+	URL.revokeObjectURL(url);
 };
 
 // Copy to clipboard utility

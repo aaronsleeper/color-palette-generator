@@ -80,7 +80,7 @@ export const useColorFamilies = (familyCount) => {
 	};
 
 	const alignFamiliesChannel = (channel) => {
-		const alignedFamilies = alignChannel(families, channel);
+		const alignedFamilies = alignChannel(families, channel, selectedFamily);
 		setFamilies(alignedFamilies);
 	};
 
