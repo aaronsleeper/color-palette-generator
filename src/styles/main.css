@@ -40,3 +40,8 @@ body {
   min-height: 100vh;
 }
 
+/* Import other stylesheets */
+@import './layout.css';
+@import './components.css';
+@import './controls.css';
+

@@ -1,0 +1,94 @@
+/* 3-Panel Layout */
+.app-container {
+  display: grid;
+  grid-template-columns: 300px 1fr 350px;
+  grid-template-rows: 100vh;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.sidebar {
+  background-color: #f8f9fa;
+  border-right: 1px solid var(--color-border);
+  overflow-y: auto;
+  padding: var(--spacing-lg);
+}
+
+.main-content {
+  background-color: var(--color-bg);
+  overflow-y: auto;
+  padding: var(--spacing-lg);
+}
+
+.editor-panel {
+  background-color: #f8f9fa;
+  border-left: 1px solid var(--color-border);
+  overflow-y: auto;
+  padding: var(--spacing-lg);
+}
+
+/* Responsive: Stack on mobile */
+@media (max-width: 1024px) {
+  .app-container {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+  }
+  
+  .sidebar,
+  .editor-panel {
+    max-height: 300px;
+  }
+}
+
+/* Hue Family Grid */
+.hue-families {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+.hue-family {
+  background-color: white;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-lg);
+}
+
+.hue-family-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.hue-family-label {
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.swatch-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.value-table {
+  display: grid;
+  grid-template-columns: auto repeat(var(--swatch-count, 0), 1fr);
+  gap: var(--spacing-xs);
+  font-size: 0.875rem;
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--spacing-sm);
+}
+
+.value-table-header {
+  font-weight: 600;
+  color: #666;
+}
+
+.value-table-cell {
+  text-align: center;
+  padding: var(--spacing-xs);
+}
+
