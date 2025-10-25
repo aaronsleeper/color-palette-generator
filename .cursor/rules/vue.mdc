@@ -1,0 +1,127 @@
+# Vue 3 Composition API Guidelines
+
+## Component Structure
+
+### Single File Components
+- Use `<script setup>` syntax for cleaner component code
+- Keep template, script, and style in single `.vue` file
+- Use Composition API over Options API
+
+### Template
+```vue
+<template>
+  <div class="component-name">
+    <!-- HTML content -->
+  </div>
+</template>
+```
+
+### Script Setup
+```vue
+<script setup>
+import { ref, computed, watch } from 'vue'
+
+// Props
+const props = defineProps({
+  modelValue: Number,
+  min: Number,
+  max: Number
+})
+
+// Emits
+const emit = defineEmits(['update:modelValue'])
+
+// State
+const value = ref(props.modelValue)
+
+// Computed
+const displayValue = computed(() => value.value.toFixed(3))
+
+// Methods
+function updateValue(newValue) {
+  value.value = newValue
+  emit('update:modelValue', newValue)
+}
+</script>
+```
+
+### Style
+```vue
+<style scoped>
+.component-name {
+  /* Scoped styles */
+}
+</style>
+```
+
+## Composition API Best Practices
+
+### Reactive State
+- Use `ref()` for primitives
+- Use `reactive()` for objects
+- Use `computed()` for derived values
+
+### Props and Emits
+- Always define props explicitly with `defineProps()`
+- Use `defineEmits()` for component events
+- Follow Vue 3 naming conventions (kebab-case in template, camelCase in script)
+
+### Watchers
+- Use `watch()` for side effects
+- Use `watchEffect()` for reactive dependencies
+- Be careful with deep watching
+
+### Component Communication
+- Parent → Child: Props
+- Child → Parent: Emits
+- Global State: Composables
+
+## Vue 3 Specific Features
+
+### v-model Updates
+```vue
+<!-- Parent -->
+<ChannelControl v-model="value" />
+
+<!-- Child -->
+<script setup>
+const props = defineProps(['modelValue'])
+const emit = defineEmits(['update:modelValue'])
+
+emit('update:modelValue', newValue)
+</script>
+```
+
+### Template Refs
+```vue
+<template>
+  <input ref="inputRef" />
+</template>
+
+<script setup>
+import { ref, onMounted } from 'vue'
+
+const inputRef = ref(null)
+
+onMounted(() => {
+  inputRef.value?.focus()
+})
+</script>
+```
+
+### Lifecycle Hooks
+- `onMounted()` - After component is mounted
+- `onUpdated()` - After component updates
+- `onUnmounted()` - Before component unmounts
+- `onBeforeMount()` - Before component mounts
+
+## File Naming
+- Components: PascalCase (e.g., `ChannelControl.vue`)
+- Composables: camelCase starting with 'use' (e.g., `useColorState.js`)
+- Utilities: camelCase (e.g., `colorUtils.js`)
+
+## Performance
+- Use `v-show` for frequently toggled elements
+- Use `v-if` for conditional rendering
+- Use `key` attribute for list items
+- Avoid inline function creation in templates

@@ -1,0 +1,21 @@
+- before writing any code ensure the following tasks are complete
+	- complete documentation of what is to be created
+	- based on the technology stack make sure you have documented where to find the latest docs for each technology via Context7
+	- create a .cursor/rules folder and add to it appropriate .mdc files that clearly detail how the LLM is to work with each technology
+		- as a starting point, find the relevant set of rules from <https://github.com/PatrickJS/awesome-cursorrules?tab=readme-ov-file#how-to-use>
+	- if you have questions ask the user and iterate as needed until everything is clarified
+	- git repo created, configured, and pushed to remote
+	- project plan with granular tasks that are small enough to be completed within a single context window. this will reduce the potential for error during development
+- create instructions for how the LLM is to use the task list and general instructions that the LLM will follow when starting each step. e.g.:
+	- find next step in the task list
+	- look up relevant documentation for the current task, preferably via Context 7
+	- understand which components and functions you can use that you already have before creating anything new
+	- write code to copmlete the task
+	- check your work in a browser and ensure the following:
+		- it functions as expected and required by the task
+		- there are no errors in the console
+		- there are no build errors
+	- only once the feature has passed your test may you consider that task complete
+		- mark the task in the list as completed
+- stage all changes, write a reasonable commit message, and push to remote
+- rebuild the code and restart the development server so the user can see the latest version and provide feedback

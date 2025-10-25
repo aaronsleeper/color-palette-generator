@@ -1,24 +1,19 @@
 {
-	"name": "palette-maker",
-	"version": "1.0.0",
-	"description": "OKLCH Color Palette Generator",
-	"main": "index.js",
-	"scripts": {
-		"dev": "vite",
-		"build": "vite build",
-		"preview": "vite preview"
-	},
-	"dependencies": {
-		"color-name": "^2.0.2",
-		"culori": "^4.0.2",
-		"lucide-react": "^0.263.1",
-		"react": "^18.2.0",
-		"react-dom": "^18.2.0"
-	},
-	"devDependencies": {
-		"@types/react": "^18.2.15",
-		"@types/react-dom": "^18.2.7",
-		"@vitejs/plugin-react": "^4.0.3",
-		"vite": "^4.4.5"
-	}
+  "name": "color-palette-generator",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "vue": "^3.5.13",
+    "chroma-js": "^2.4.2"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.1",
+    "vite": "^6.0.7"
+  }
 }
+

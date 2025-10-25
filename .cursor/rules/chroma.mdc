@@ -1,0 +1,140 @@
+# Chroma.js Usage Guidelines
+
+## Import
+
+```javascript
+import chroma from 'chroma-js'
+```
+
+## OKLCH Color Space
+
+### Creating OKLCH Colors
+```javascript
+// From values
+const color = chroma.oklch(0.7, 0.15, 240)
+// or
+const color = chroma(0.7, 0.15, 240, 'oklch')
+
+// From hex/RGB
+const color = chroma('#ff0000').oklch()
+```
+
+### Getting OKLCH Components
+```javascript
+const [L, C, H] = color.oklch()
+// L: 0-1 (lightness)
+// C: 0-1 (chroma)
+// H: 0-360 (hue)
+```
+
+### CSS Output
+```javascript
+color.css('oklch')  // Returns: 'oklch(70% 15 240)'
+```
+
+## Color Operations
+
+### Mixing Colors
+```javascript
+const mixed = chroma.mix(color1, color2, ratio, 'oklch')
+// ratio: 0-1 (0 = color1, 1 = color2)
+```
+
+### Converting Spaces
+```javascript
+color.rgb()   // RGB array
+color.hex()   // Hex string
+color.hsl()   // HSL array
+color.oklch() // OKLCH array
+```
+
+### Color Manipulation
+```javascript
+color.darken(amount)   // Darken color
+color.brighten(amount) // Brighten color
+color.saturate(amount) // Increase saturation
+color.desaturate(amount) // Decrease saturation
+```
+
+## Color Naming
+
+### Get Named Color
+```javascript
+const name = color.name()
+// Returns nearest named color or hex if unnamed
+```
+
+### Examples
+```javascript
+chroma('#ffa500').name()  // 'orange'
+chroma('#ffa505').name()  // '#ffa505' (unnamed)
+```
+
+## CSS Color Format
+
+### Formatting OKLCH
+```javascript
+function formatOKLCH(L, C, H) {
+  // L: 0-100 percentage
+  // C: 0-150 absolute value
+  // H: 0-360 degrees
+  return `oklch(${L}% ${C} ${H})`
+}
+```
+
+## Best Practices
+
+### Gamut Handling
+```javascript
+// Check if color is in sRGB gamut
+const inGamut = color.css('oklch').includes('display-p3') === false
+
+// Clip to sRGB if needed
+const clipped = chroma(color).clipped
+```
+
+### Color Interpolation
+```javascript
+// Always use OKLCH for perceptually uniform interpolation
+const colors = chroma.mix(base, target, ratio, 'oklch')
+```
+
+### Performance
+- Chroma.js is lightweight (~7KB gzipped)
+- Calculations are fast
+- Cache color objects when possible
+
+## Common Patterns
+
+### Generate Color Scale
+```javascript
+const scale = chroma.scale([color1, color2]).mode('oklch')
+const colors = scale.colors(5)
+```
+
+### Get Nearest Named Color
+```javascript
+function getColorName(color) {
+  const name = chroma(color).name()
+  // If hex returned, generate descriptive name
+  if (name.startsWith('#')) {
+    const [L, C, H] = chroma(color).oklch()
+    return `l${Math.round(L*100)}c${Math.round(C*100)}h${Math.round(H)}`
+  }
+  return name
+}
+```
+
+## Error Handling
+
+```javascript
+try {
+  const color = chroma.oklch(L, C, H)
+  if (color.valid()) {
+    // Use color
+  }
+} catch (error) {
+  console.error('Invalid color:', error)
+  // Fallback to safe color
+}
+```

@@ -1,0 +1,99 @@
+# Vite Configuration Guidelines
+
+## Project Setup
+
+### Initialize Vue Project
+```bash
+npm create vite@latest . --template vue
+npm install
+```
+
+### Development Server
+```bash
+npm run dev
+```
+- Runs on `http://localhost:5173` by default
+- Hot Module Replacement (HMR) enabled
+- Fast refresh for Vue components
+
+### Build
+```bash
+npm run build
+```
+- Outputs to `dist/` directory
+- Optimized production build
+- Code splitting enabled
+
+## Configuration
+
+### vite.config.js
+```javascript
+import { defineConfig } from 'vite'
+import vue from '@vitejs/plugin-vue'
+
+export default defineConfig({
+  plugins: [vue()],
+  server: {
+    port: 5173,
+    open: true
+  }
+})
+```
+
+## Import Paths
+
+### Absolute Imports
+Use relative paths unless specifically needed:
+```javascript
+import Component from './components/Component.vue'
+import { helper } from '../utils/helper.js'
+```
+
+### Asset Imports
+```javascript
+import logo from './assets/logo.png'
+import styles from './styles/main.css'
+```
+
+## Environment Variables
+
+### .env Files
+- `.env` - loaded in all cases
+- `.env.local` - loaded in all cases, ignored by git
+- `.env.production` - loaded in production only
+
+### Access in Code
+```javascript
+const apiUrl = import.meta.env.VITE_API_URL
+```
+
+## CSS Handling
+
+### Global Styles
+Import in `main.js`:
+```javascript
+import './styles/main.css'
+```
+
+### Scoped Styles
+Use `<style scoped>` in component files
+
+### CSS Modules
+Not used in this project (Plain CSS only)
+
+## Development Tips
+
+### Fast Refresh
+- File changes trigger automatic reload
+- Component state preserved where possible
+- Instant feedback on changes
+
+### Debugging
+- Use browser DevTools
+- Source maps enabled by default
+- Check console for errors
+
+### Performance
+- Vite uses ES modules in development
+- Fast cold start
+- Efficient HMR
