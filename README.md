@@ -55,6 +55,17 @@ See the `documentation/` folder for detailed specifications:
 - `COLOR_MATH.md` - Color mathematics and transformations
 - `DEVELOPMENT_WORKFLOW.md` - Development guidelines
 - `CONTEXT7_RESOURCES.md` - Documentation resources
+- `USER_GUIDE.md` - User guide and troubleshooting
+
+## Component Structure
+
+- **Swatch**: Individual color display
+- **ChannelControl**: Synchronized input and slider pair
+- **ColorControl**: Dynamic channel controls for color space
+- **HueFamily**: Group of related swatches with value display
+- **GlobalControls**: Sidebar with global transform settings
+- **ColorEditor**: Right panel for editing base colors
+- **ExportPanel**: CSS and SVG export functionality
 
 ## Building for Production
 

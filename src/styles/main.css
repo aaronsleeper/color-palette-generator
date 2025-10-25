@@ -1,3 +1,8 @@
+/* Import other stylesheets first */
+@import './layout.css';
+@import './components.css';
+@import './controls.css';
+
 /* Global Styles */
 * {
   margin: 0;
@@ -39,9 +44,4 @@ body {
 #app {
   min-height: 100vh;
 }
-
-/* Import other stylesheets */
-@import './layout.css';
-@import './components.css';
-@import './controls.css';
 
